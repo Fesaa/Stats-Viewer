@@ -5,7 +5,6 @@ import SwiftData
 struct Stats_ViewerApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
@@ -19,6 +18,7 @@ struct Stats_ViewerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(StatbelServiceImpl())
         }
         .modelContainer(sharedModelContainer)
     }

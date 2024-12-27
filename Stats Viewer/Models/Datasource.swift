@@ -1,8 +1,3 @@
-
-public struct DatasourceResponse: Codable {
-    public let source: [Datasource]
-}
-
 public struct Datasource: Codable, Identifiable {
     
     public let id: String
