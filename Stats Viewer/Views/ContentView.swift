@@ -116,4 +116,5 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .environmentObject(StatbelServiceImpl())
+        .environmentObject(CacheServiceImpl())
 }

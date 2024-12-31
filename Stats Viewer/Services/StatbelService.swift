@@ -1,10 +1,7 @@
 import Foundation
 
 public protocol StatbelService: ObservableObject {
-    
-    func getAllDatasources() async throws -> [Datasource]
     func getAllView() async throws -> [StatbelView]
-    
 }
 
 public class StatbelServiceImpl: StatbelService {
@@ -14,21 +11,26 @@ public class StatbelServiceImpl: StatbelService {
     private let jsonDecoder: JSONDecoder = JSONDecoder()
     private let urlSession = URLSession.shared
     
+    private let cache: any CacheService = CacheServiceImpl.shared
+    
     public func getAllView() async throws -> [StatbelView] {
+        let cachedViews = self.cache.retrieve(object: [StatbelView].self, key: "views")
+        if (cachedViews != nil) {
+            return cachedViews!
+        }
+        
         guard let url = URL(string: apiUrl + "views/") else {
             return []
         }
 
-        return try await self.get([StatbelView].self, url: url)
-    }
-    
-    
-    public func getAllDatasources() async throws -> [Datasource] {
-        guard let url = URL(string: apiUrl + "datasources/") else {
-            return []
+        let views = try await self.get([StatbelView].self, url: url)
+        do {
+            try self.cache.store(object: views, key: "views")
+        } catch {
+            
         }
         
-        return try await self.get([Datasource].self, url: url)
+        return views
     }
 
     private func get<T: Decodable>(_ type: T.Type , url: URL) async throws -> T {
