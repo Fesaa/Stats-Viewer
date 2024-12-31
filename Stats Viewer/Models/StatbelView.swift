@@ -1,3 +1,4 @@
+import Foundation
 
 public struct StatbelView: Codable, Identifiable {
     
@@ -12,5 +13,9 @@ public struct StatbelView: Codable, Identifiable {
     
     public let note: String?
     public let published: Bool
+    
+    public func getLastChangeDate() -> Date {
+        Date(timeIntervalSince1970: TimeInterval(lastChangeDate)/1000)
+    }
     
 }
