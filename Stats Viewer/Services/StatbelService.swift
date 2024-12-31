@@ -1,10 +1,6 @@
 import Foundation
 
-public protocol StatbelService: ObservableObject {
-    func getAllView() async throws -> [StatbelView]
-}
-
-public class StatbelServiceImpl: StatbelService {
+public class StatbelService: ObservableObject {
     //private let apiUrl: String = "https://bestat.economie.fgov.be/bestat/api/"
     private let apiUrl: String = "http://localhost:8080/"
     
@@ -13,10 +9,12 @@ public class StatbelServiceImpl: StatbelService {
     
     private let cache: any CacheService = CacheServiceImpl.shared
     
-    public func getAllView() async throws -> [StatbelView] {
-        let cachedViews = self.cache.retrieve(object: [StatbelView].self, key: "views")
-        if (cachedViews != nil) {
-            return cachedViews!
+    public func getAllView(_ force: Bool = false) async throws -> [StatbelView] {
+        if !force {
+            let cachedViews = self.cache.retrieve(object: [StatbelView].self, key: "views")
+            if (cachedViews != nil) {
+                return cachedViews!
+            }
         }
         
         guard let url = URL(string: apiUrl + "views/") else {
@@ -27,7 +25,7 @@ public class StatbelServiceImpl: StatbelService {
         do {
             try self.cache.store(object: views, key: "views")
         } catch {
-            
+            print("\(error)")
         }
         
         return views

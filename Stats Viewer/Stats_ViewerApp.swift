@@ -18,7 +18,7 @@ struct Stats_ViewerApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(StatbelServiceImpl())
+                .environmentObject(StatbelService())
         }
         .modelContainer(sharedModelContainer)
     }

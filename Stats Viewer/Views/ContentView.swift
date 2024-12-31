@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var statsbelService: StatbelServiceImpl
+    @EnvironmentObject var statsbelService: StatbelService
     
     @State private var views: [StatbelView] = []
     @State private var filteredViews: [StatbelView] = []
@@ -99,6 +99,6 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environmentObject(StatbelServiceImpl())
+        .environmentObject(StatbelService())
         .environmentObject(CacheServiceImpl())
 }
