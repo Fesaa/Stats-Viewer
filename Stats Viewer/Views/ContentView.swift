@@ -43,7 +43,7 @@ struct ContentView: View {
                 }
                 .navigationTitle("Views")
                 .task {
-                    await loadDatasources()
+                    await loadViews()
                     applyFilters()
                 }
             }.toolbar {
@@ -59,7 +59,7 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showSettingsSheet) {
-                SettingsView(toggle: $showSettingsSheet)
+                SettingsView(toggle: $showSettingsSheet, reload: loadViews)
             }
             .sheet(isPresented: $showFilterSheet) {
                 FilterModalView(selectedLanguage: $selectedLanguage, selectedDate: $selectedDate, toggle: $showFilterSheet, applyFiltersCallback: applyFilters)
@@ -83,7 +83,7 @@ struct ContentView: View {
         }
     }
     
-    private func loadDatasources() async {
+    private func loadViews() async {
         print("Loading datasources...")
         
         do {

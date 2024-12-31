@@ -5,6 +5,7 @@ struct SettingsView: View {
     let cache: any CacheService = CacheServiceImpl.shared
 
     @Binding var toggle: Bool
+    let reload: () async -> Void
 
     @State private var showNotification: Bool = false
     @State private var notificationMessage: String = ""
@@ -13,7 +14,9 @@ struct SettingsView: View {
         NavigationView {
             Form {
                 Button(action: {
-                    self.clearViewsCache()
+                    Task {
+                        await self.clearViewsCache()
+                    }
                 }) {
                     Text("Reset Cache")
                         .foregroundColor(.red)
@@ -35,7 +38,7 @@ struct SettingsView: View {
         }
     }
 
-    func clearViewsCache() {
+    func clearViewsCache() async {
         do {
             try self.cache.delete(key: "views")
             self.notificationMessage = "Views cache cleared!"
@@ -44,5 +47,6 @@ struct SettingsView: View {
             self.notificationMessage = "Views cache clearing failed!"
             self.showNotification = true
         }
+        await self.reload()
     }
 }
