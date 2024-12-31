@@ -27,6 +27,11 @@ public class CacheServiceImpl: CacheService {
     public func store<T: Codable>(object: T, key: String) throws {
         let fileURL = cacheDirectory.appendingPathComponent(key)
         let cacheEntry = CacheEntry(object: object, storageDate: Date())
+
+        let directoryURL = fileURL.deletingLastPathComponent()
+        if !FileManager.default.fileExists(atPath: directoryURL.path) {
+            try FileManager.default.createDirectory(at: directoryURL, withIntermediateDirectories: true, attributes: nil)
+        }
         
         let data = try JSONEncoder().encode(cacheEntry)
         try data.write(to: fileURL)
@@ -48,6 +53,9 @@ public class CacheServiceImpl: CacheService {
     public func delete(key: String) throws {
         let fileManager = FileManager.default
         let fileURL = cacheDirectory.appendingPathComponent(key)
-        try fileManager.removeItem(at: fileURL)
+        
+        if fileManager.fileExists(atPath: fileURL.path) {
+            try fileManager.removeItem(at: fileURL)
+        }
     }
 }
