@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cache"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 )
 
 func main() {
@@ -22,6 +23,7 @@ func main() {
 	}
 
 	app := fiber.New()
+	app.Use(logger.New())
 
 	app.Use(cache.New(cache.Config{
 		Expiration:   time.Hour,
