@@ -12,14 +12,9 @@ struct ContentView: View {
         let currentYear = Calendar.current.component(.year, from: Date())
         return Calendar.current.date(from: DateComponents(year: currentYear, month: 1, day: 1)) ?? Date()
     }()
-    
-    let languages = [
-        "all": "All",
-        "nl": "Dutch",
-        "en": "English",
-        "fr": "French",
-        "de": "German",
-    ]
+    @State private var showSettingsSheet: Bool = false
+    @State private var showFilterSheet: Bool = false
+
     
     var body: some View {
         NavigationView {
@@ -30,34 +25,6 @@ struct ContentView: View {
                     .onChange(of: searchQuery, initial: true) { _, _ in
                         applyFilters()
                     }
-                
-                HStack {
-                    Text("Filter by Language:")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                    Picker("Language", selection: $selectedLanguage) {
-                        ForEach(languages.keys.sorted(), id: \ .self) { key in
-                            Text(languages[key]!).tag(key)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
-                }
-                .padding()
-                .onChange(of: selectedLanguage, initial: true) { _, _ in
-                    applyFilters()
-                }
-                
-                HStack {
-                    Text("Published After:")
-                        .font(.subheadline)
-                        .foregroundColor(.gray)
-                    DatePicker("", selection: $selectedDate, displayedComponents: .date)
-                        .labelsHidden()
-                        .onChange(of: selectedDate, initial: true) { _, _ in
-                            applyFilters()
-                        }
-                }
-                .padding()
                 
                 List {
                     ForEach(filteredViews) { view in
@@ -79,6 +46,23 @@ struct ContentView: View {
                     await loadDatasources()
                     applyFilters()
                 }
+            }.toolbar {
+                Button(action: {
+                    showFilterSheet.toggle()
+                }) {
+                    Image(systemName: "magnifyingglass")
+                }
+                Button(action: {
+                    showSettingsSheet.toggle()
+                }) {
+                    Image(systemName: "gear")
+                }
+            }
+            .sheet(isPresented: $showSettingsSheet) {
+                SettingsView(toggle: $showSettingsSheet)
+            }
+            .sheet(isPresented: $showFilterSheet) {
+                FilterModalView(selectedLanguage: $selectedLanguage, selectedDate: $selectedDate, toggle: $showFilterSheet, applyFiltersCallback: applyFilters)
             }
         }
     }
