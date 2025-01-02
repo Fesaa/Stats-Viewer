@@ -19,3 +19,35 @@ public struct StatbelView: Codable, Identifiable {
     }
     
 }
+
+
+public struct ExportResult: Codable {
+    public let facts: [Dictionary<String, FactValue>]
+}
+
+public enum FactValue: Codable {
+    case string(String)
+    case float(Float)
+    
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let stringValue = try? container.decode(String.self) {
+            self = .string(stringValue)
+        } else if let floatValue = try? container.decode(Float.self) {
+            self = .float(floatValue)
+        } else {
+            throw DecodingError.typeMismatch(FactValue.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Value is not a String or Float"))
+        }
+    }
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let stringValue):
+            try container.encode(stringValue)
+        case .float(let floatValue):
+            try container.encode(floatValue)
+        }
+    }
+}
+

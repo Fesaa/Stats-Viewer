@@ -9,6 +9,21 @@ public class StatbelService: ObservableObject {
     
     private let cache: any CacheService = CacheServiceImpl.shared
     
+    public func getExportResult(viewID: String, force: Bool = false) async throws -> ExportResult {
+        if !force {
+            let cachedExport = self.cache.retrieve(object: ExportResult.self, key: "views-export/\(viewID)")
+            if (cachedExport != nil) {
+                return cachedExport!
+            }
+        }
+        
+        guard let url = URL(string: apiUrl + "views/\(viewID)/result/JSON") else {
+            throw URLError(.badURL)
+        }
+        
+        return try await self.get(ExportResult.self, url: url)
+    }
+    
     public func getAllView(_ force: Bool = false) async throws -> [StatbelView] {
         if !force {
             let cachedViews = self.cache.retrieve(object: [StatbelView].self, key: "views")
