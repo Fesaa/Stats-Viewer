@@ -72,10 +72,14 @@ struct ContentView: View {
                 }
             }
             .sheet(isPresented: $showSettingsSheet) {
-                SettingsView(toggle: $showSettingsSheet, reload: loadViews)
+                SettingsView(toggle: $showSettingsSheet,
+                             reload: loadViews)
             }
             .sheet(isPresented: $showFilterSheet) {
-                FilterModalView(selectedLanguage: $selectedLanguage, selectedDate: $selectedDate, toggle: $showFilterSheet, applyFiltersCallback: applyFilters)
+                FilterModalView(selectedLanguage: $selectedLanguage,
+                                selectedDate: $selectedDate,
+                                toggle: $showFilterSheet,
+                                applyFiltersCallback: applyFilters)
             }.navigationTitle(filteredViews.count > 0 ? "Views (\(filteredViews.count))" : "Views")
                 .task {
                     await loadViews()
