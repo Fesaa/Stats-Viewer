@@ -14,7 +14,7 @@ struct ContentView: View {
     }()
     @State private var showSettingsSheet: Bool = false
     @State private var showFilterSheet: Bool = false
-
+    
     
     var body: some View {
         NavigationView {
@@ -26,25 +26,38 @@ struct ContentView: View {
                         applyFilters()
                     }
                 
-                List {
-                    ForEach(filteredViews) { view in
-                        NavigationLink(destination: StatbelViewView(statbelView: view)) {
-                            VStack(alignment: .leading) {
-                                Text(view.name)
-                                    .font(.headline)
-                                    .padding(.bottom, 2)
-                                Text("Last updated on: \(formattedDate(view.getLastChangeDate()))")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
+                if (filteredViews.count == 0) {
+                    VStack(spacing: 20) {
+                        Image(systemName: "magnifyingglass")
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 100, height: 100)
+                            .foregroundColor(.gray)
+                        
+                        Text("No views found")
+                            .font(.headline)
+                            .foregroundColor(.gray)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 20)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    List {
+                        ForEach(filteredViews) { view in
+                            NavigationLink(destination: StatbelViewView(statbelView: view)) {
+                                VStack(alignment: .leading) {
+                                    Text(view.name)
+                                        .font(.headline)
+                                        .padding(.bottom, 2)
+                                    Text("Last updated on: \(formattedDate(view.getLastChangeDate()))")
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.vertical, 8)
                             }
-                            .padding(.vertical, 8)
                         }
                     }
-                }
-                .navigationTitle("Views")
-                .task {
-                    await loadViews()
-                    applyFilters()
                 }
             }.toolbar {
                 Button(action: {
@@ -63,7 +76,11 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showFilterSheet) {
                 FilterModalView(selectedLanguage: $selectedLanguage, selectedDate: $selectedDate, toggle: $showFilterSheet, applyFiltersCallback: applyFilters)
-            }
+            }.navigationTitle("Views")
+                .task {
+                    await loadViews()
+                    applyFilters()
+                }
         }
     }
     
