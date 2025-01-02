@@ -10,7 +10,7 @@ struct ContentView: View {
     @State private var selectedLanguage: String = "all"
     @State private var selectedDate: Date = {
         let currentYear = Calendar.current.component(.year, from: Date())
-        return Calendar.current.date(from: DateComponents(year: currentYear, month: 1, day: 1)) ?? Date()
+        return Calendar.current.date(from: DateComponents(year: currentYear-1, month: 1, day: 1)) ?? Date()
     }()
     @State private var showSettingsSheet: Bool = false
     @State private var showFilterSheet: Bool = false
