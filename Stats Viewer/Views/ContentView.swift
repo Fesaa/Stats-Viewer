@@ -76,7 +76,7 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showFilterSheet) {
                 FilterModalView(selectedLanguage: $selectedLanguage, selectedDate: $selectedDate, toggle: $showFilterSheet, applyFiltersCallback: applyFilters)
-            }.navigationTitle("Views")
+            }.navigationTitle(filteredViews.count > 0 ? "Views (\(filteredViews.count))" : "Views")
                 .task {
                     await loadViews()
                     applyFilters()
