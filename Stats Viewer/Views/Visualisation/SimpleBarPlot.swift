@@ -1,50 +1,52 @@
 import SwiftUI
 import Charts
 
-class SimpleBarPlot: BaseVisualisation {
+class SimpleBarPlot: Visualisation {
     @State private var key: String = ""
     let source: ExportResult
-    
+
     init(source: ExportResult) {
         self.source = source
     }
-    
+
     private func keys() -> [String] {
-        if (self.source.facts.count == 0) {
-            return [];
+        if self.source.facts.isEmpty {
+            return []
         }
-        
         return self.source.facts[0].keys.map { $0 }
     }
-    
+
     private func mapData() -> Float? {
         return 0
     }
-    
-    override func optionModels() -> any View {
-        NavigationView {
+
+    func optionModels() -> AnyView {
+        AnyView(NavigationView {
             Form {
                 Section {
                     Picker("Key", selection: $key) {
                         ForEach(keys(), id: \.self) { key in
                             Text(key).tag(key)
                         }
+                    }.onChange(of: key, initial: true) { newValue, _ in
+                        self.key = newValue
                     }
                 }
             }
-        }
+        })
     }
-    
-    override func visualisation() -> any View {
-        Chart {
-        }
+
+    func visualisation() -> AnyView {
+        AnyView(Chart {
+            // Populate the chart as needed
+        })
     }
-    
-    override func isValid() -> Bool {
+
+    func isValid() -> Bool {
         return !key.isEmpty
     }
-    
-    override func errors() -> [String] {
+
+    func errors() -> [String] {
         return key.isEmpty ? ["Key cannot be empty"] : []
     }
 }

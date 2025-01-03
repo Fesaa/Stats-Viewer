@@ -1,45 +1,24 @@
-
 import SwiftUI
 
-public protocol Visualisation {
-    func optionModels() -> any View;
-    func visualisation() -> any View;
-    func isValid() -> Bool;
-    func errors() -> [String];
-    func enable();
-    func disable();
-    func isEnabled() -> Bool;
+public protocol Visualisation: Identifiable {
+    func optionModels() -> AnyView
+    func visualisation() -> AnyView
+    func isValid() -> Bool
+    func errors() -> [String]
 }
 
-class BaseVisualisation: Visualisation {
-    private var enabled: Bool = false
-    
-    public func enable() {
-        enabled = true
+struct AnyVisualisation: Identifiable {
+    private let _id: AnyHashable
+    private let _optionModels: () -> AnyView
+
+    var id: AnyHashable { _id }
+
+    init<V: Visualisation>(_ visualisation: V) {
+        self._id = visualisation.id
+        self._optionModels = visualisation.optionModels
     }
-    
-    public func disable() {
-        enabled = false
-    }
-    
-    public func isEnabled() -> Bool {
-        enabled
-    }
-    
-    public func optionModels() -> any View {
-        fatalError("`optionModels()` must be overridden.")
-    }
-    
-    public func visualisation() -> any View {
-        fatalError("`visualisation()` must be overridden.")
-    }
-    
-    public func isValid() -> Bool {
-        fatalError("`isValid()` must be overridden.")
-    }
-    
-    public func errors() -> [String] {
-        fatalError("`errors()` must be overridden.")
+
+    func optionModels() -> AnyView {
+        _optionModels()
     }
 }
-

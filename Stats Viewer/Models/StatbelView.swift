@@ -28,10 +28,13 @@ public struct ExportResult: Codable {
 public enum FactValue: Codable {
     case string(String)
     case float(Float)
+    case none
     
     public init(from decoder: Decoder) throws {
         let container = try decoder.singleValueContainer()
-        if let stringValue = try? container.decode(String.self) {
+        if container.decodeNil() {
+            self = .none
+        } else if let stringValue = try? container.decode(String.self) {
             self = .string(stringValue)
         } else if let floatValue = try? container.decode(Float.self) {
             self = .float(floatValue)
@@ -47,6 +50,8 @@ public enum FactValue: Codable {
             try container.encode(stringValue)
         case .float(let floatValue):
             try container.encode(floatValue)
+        case .none:
+            try container.encodeNil()
         }
     }
 }
