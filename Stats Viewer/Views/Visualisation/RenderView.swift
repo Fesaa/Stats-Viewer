@@ -7,18 +7,20 @@ struct RenderView: View {
     
     var body: some View {
         
-        VStack {
-            ForEach(self.visualisationTypes.indices, id: \.self) { index in
-                let cfg = self.cfgs[index]
-                let vis = self.visualisationTypes[index]
-                
-                VStack {
-                    Text(cfg.title)
-                        .font(.headline)
-                        .padding(.bottom)
+        ScrollView(.vertical) {
+            VStack {
+                ForEach(self.visualisationTypes.indices, id: \.self) { index in
+                    let cfg = self.cfgs[index]
+                    let vis = self.visualisationTypes[index]
                     
-                    vis.Visuluatisation(source: self.source, cfg: cfg)
-                }.padding(10)
+                    VStack {
+                        Text(cfg.title)
+                            .font(.headline)
+                            .padding(.bottom)
+                        
+                        vis.Visuluatisation(source: self.source, cfg: cfg)
+                    }.padding(10)
+                }
             }
         }
     }

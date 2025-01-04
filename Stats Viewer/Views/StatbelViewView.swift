@@ -41,11 +41,10 @@ struct StatbelViewView: View {
     
     func configFor() -> some View {
         let index = self.configIndex
-        
-        print(index)
         return self.selectedVisualizations[index].Config(
             source: self.source!,
-            cfg: self.configBinding(index: index))
+            cfg: self.configBinding(index: index),
+            open: $showConfig)
     }
     
     func getTitle(_ index: Int) -> String {

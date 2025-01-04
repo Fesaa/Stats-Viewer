@@ -8,8 +8,8 @@ struct SimpleBarPlot: View {
     @State var errors: [String] = []
     
     func transform(_ data: Fact) -> BarMark {
-        let xKey = config.values["xKey"] ?? self.source.facts[0].keys.first!
-        let yKey = config.values["yKey"] ?? self.source.facts[0].keys.first!
+        let xKey = config.getValue("xKey") ?? self.source.facts[0].keys.first!
+        let yKey = config.getValue("yKey") ?? self.source.facts[0].keys.first!
 
         let label = switch data[xKey]! {
         case .string(let s): s
@@ -35,9 +35,6 @@ struct SimpleBarPlot: View {
     }
     
     var body: some View {
-        Text(config.title)
-            .font(.headline)
-        
         Chart {
             ForEach(self.source.facts.indices, id: \.self) { index in
                 self.marks(index)
@@ -50,13 +47,14 @@ struct SimpleBarPlot: View {
 struct BarPlotConfigurationView: View {
     var source: ExportResult
     @Binding var cfg: Configuration
+    @Binding var open: Bool
     
     private func keys() -> [String] {
         if self.source.facts.isEmpty {
                 return []
             }
         return self.source.facts[0].keys.map { $0 }
-        }
+    }
     
     var body: some View {
         NavigationView {
@@ -79,6 +77,11 @@ struct BarPlotConfigurationView: View {
                         }
                     }
                 }
+                Button(action: { self.open.toggle() }) {
+                    Text("Close")
+                        .frame(maxWidth: .infinity)
+                        .cornerRadius(10)
+                }
             }
         }
     }
@@ -86,10 +89,10 @@ struct BarPlotConfigurationView: View {
     func xKeyBinding() -> Binding<String> {
         Binding(
             get: {
-                return self.cfg.values["xKey"] ?? self.keys().first ?? ""
+                return self.cfg.getValue("xKey") ?? self.keys().first ?? ""
             },
             set: {
-                self.cfg.values["xKey"] = $0
+                self.cfg.setValue("xKey", value: $0)
             }
         )
     }
@@ -97,10 +100,10 @@ struct BarPlotConfigurationView: View {
     func yKeyBinding() -> Binding<String> {
         Binding(
             get: {
-                return self.cfg.values["yKey"] ?? self.keys().first ?? ""
+                return self.cfg.getValue("yKey") ?? self.keys().first ?? ""
             },
             set: {
-                self.cfg.values["yKey"] = $0
+                self.cfg.setValue("yKey", value: $0)
             }
         )
     }
