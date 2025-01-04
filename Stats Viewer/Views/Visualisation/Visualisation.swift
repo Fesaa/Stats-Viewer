@@ -1,24 +1,38 @@
+import Foundation
 import SwiftUI
 
-public protocol Visualisation: Identifiable {
-    func optionModels() -> AnyView
-    func visualisation() -> AnyView
-    func isValid() -> Bool
-    func errors() -> [String]
+enum VisualisationType: CaseIterable {
+    
+    case BarPlot
+    //case LinePlot
+    
+    func DisplayName() -> String {
+        switch self {
+        case .BarPlot: return "Bar Plot"
+        //case .LinePlot: return "Line Plot"
+        }
+    }
+    
+    func Config(source: ExportResult, cfg: Binding<Configuration>) -> some View {
+        switch self {
+        case .BarPlot: return BarPlotConfigurationView(source: source, cfg: cfg)
+        }
+    }
+    
+    func Visuluatisation(source: ExportResult, cfg: Configuration) -> some View {
+        switch self {
+        case .BarPlot: return SimpleBarPlot(source: source, config: cfg)
+        }
+    }
 }
 
-struct AnyVisualisation: Identifiable {
-    private let _id: AnyHashable
-    private let _optionModels: () -> AnyView
+struct Configuration {
+    var title: String = ""
+    var values: Dictionary<String, String> = [:]
+}
 
-    var id: AnyHashable { _id }
-
-    init<V: Visualisation>(_ visualisation: V) {
-        self._id = visualisation.id
-        self._optionModels = visualisation.optionModels
-    }
-
-    func optionModels() -> AnyView {
-        _optionModels()
-    }
+struct Visualization: Identifiable {
+    var id: UUID = UUID()
+    var render: any View
+    var config: any View
 }

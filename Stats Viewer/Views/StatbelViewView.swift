@@ -5,94 +5,126 @@ struct StatbelViewView: View {
     @EnvironmentObject var statsbelService: StatbelService
     
     let statbelView: StatbelView
-    
-    @State private var addedVisualisations: [(String, any Visualisation)] = []
     @State var source: ExportResult? = nil
-    @State private var showingOptionsModal: AnyVisualisation? = nil
     
-    var registry: Dictionary<String, (ExportResult) -> any Visualisation> {
-        var r = Dictionary<String, (ExportResult) -> any Visualisation>();
-        
-        r["Simple Bar Plot"] = SimpleBarPlot.init;
-        
-        return r;
-    }
+    @State private var selectedVisualizations: [VisualisationType] = []
+    @State private var configs: [Configuration] = []
+    
+    @State private var showConfig: Bool = false
+    @State private var configIndex: Int = 0
     
     
     init(statbelView: StatbelView) {
         self.statbelView = statbelView
     }
     
-    var optionsView: some View {
-        VStack {
-            Text("Available Visualisations")
-                .font(.headline)
-            
-            ScrollView {
-                ForEach(registry.keys.sorted(), id: \.self) { visualisationName in
-                    HStack {
-                        Text(visualisationName)
-                        Spacer()
-                        Button(action: {
-                            if let exportResult = source, let createVisualisation = registry[visualisationName] {
-                                let visualisation = createVisualisation(exportResult)
-                                addedVisualisations.append((visualisationName, visualisation))
-                            }
-                        }) {
-                            Text("Add")
-                                .padding(5)
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(5)
-                        }
-                    }
-                    .padding(.horizontal)
-                }
+    func configBinding(index: Int) -> Binding<Configuration> {
+        Binding(
+            get: {
+                self.configs[index]
+            },
+            set: {
+                self.configs[index] = $0
             }
-        }
+        )
     }
     
-    var currentVisualisationsView: some View {
+    func addVisualization(_ visualization: VisualisationType) {
+        self.selectedVisualizations.append(visualization)
+        self.configs.append(Configuration())
+    }
+    
+    func removeVisualization(_ index: Int) {
+        self.selectedVisualizations.remove(at: index)
+        self.configs.remove(at: index)
+    }
+    
+    func configFor() -> some View {
+        let index = self.configIndex
         
+        print(index)
+        return self.selectedVisualizations[index].Config(
+            source: self.source!,
+            cfg: self.configBinding(index: index))
+    }
+    
+    func getTitle(_ index: Int) -> String {
+        let cfg: Configuration = self.configs[index]
+        if cfg.title.isEmpty {
+            return "Visualization \(index+1)"
+        }
+        
+        return cfg.title
+    }
+    
+    var configStack: some View {
         VStack {
-            Text("Added Visualisations")
-                .font(.headline)
-            
             ScrollView {
-                ForEach(addedVisualisations.indices, id: \.self) { index in
-                    let (name, visualisation) = addedVisualisations[index]
+                ForEach(self.selectedVisualizations.indices, id: \.self) { index in
                     HStack {
-                        Text(name)
-                        
+                        Text(self.getTitle(index))
+
                         Spacer()
                         
                         Button(action: {
-                            showingOptionsModal = AnyVisualisation(visualisation)
+                            self.configIndex = index
+                            self.showConfig.toggle()
                         }) {
                             Image(systemName: "gear")
                                 .foregroundColor(.blue)
                         }
-                        .sheet(item: $showingOptionsModal) { vis in
-                            vis.optionModels()
+                        .sheet(isPresented: $showConfig) {
+                            self.configFor()
                         }
                         
                         Button(action: {
-                            addedVisualisations.remove(at: index)
+                            self.removeVisualization(index)
                         }) {
-                            Text("Remove")
+                            Image(systemName: "trash")
                                 .foregroundColor(.red)
                         }
-                    }
-                    .padding(.horizontal)
+                    }.padding(10)
+                        .background(Color.white)
+                        .cornerRadius(8)
+                        .shadow(color: Color.gray.opacity(0.2), radius: 6, x: 0, y: 4)
                 }
             }
-        }
+        }.padding(10)
     }
     
+    
+    var optionsStack: some View {
+        VStack {
+            ScrollView {
+                ForEach(VisualisationType.allCases, id: \.self) { vis in
+                    HStack {
+                        Text(vis.DisplayName())
+                        Spacer()
+                        Button(action: {
+                            self.addVisualization(vis)
+                        }) {
+                            Text("Add")
+                                .padding(8)
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(8)
+                                .shadow(radius: 4)
+                        }
+                    }
+                    .padding(10)
+                    .background(Color.white)
+                    .cornerRadius(8)
+                    .shadow(color: Color.gray.opacity(0.2), radius: 6, x: 0, y: 4)
+                }
+            }
+        }.padding(10)
+    }
+    
+    
     var renderButton: some View {
-        Button(action: {
-            print("Rendering...")
-        }) {
+        NavigationLink(destination: RenderView(source: self.source!,
+                                               visualisationTypes: self.selectedVisualizations,
+                                               cfgs: self.configs)) {
             Text("Render")
                 .padding()
                 .frame(maxWidth: .infinity)
@@ -100,7 +132,6 @@ struct StatbelViewView: View {
                 .foregroundColor(.white)
                 .cornerRadius(10)
         }
-        .padding(.horizontal)
     }
     
     var body: some View {
@@ -109,11 +140,17 @@ struct StatbelViewView: View {
                 if self.source != nil {
                     VStack {
                         Text(self.statbelView.name)
+                            .font(.headline)
                         
-                        optionsView
-                        currentVisualisationsView
+                        optionsStack
+                            .padding(.bottom, 8)
+                        
+                        configStack
+                            .padding(.bottom, 8)
+                        
                         renderButton
                     }
+                    .padding(16)
                 } else {
                     VStack {
                         LoadingView()
@@ -128,5 +165,22 @@ struct StatbelViewView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Preview
+struct StatbelViewView_Previews: PreviewProvider {
+    static var previews: some View {
+        StatbelViewView(statbelView: StatbelView(
+            id: "1be9b77f-4005-4d58-a885-8281b5bbe617",
+            name: "Densité de population (habitants/km²)",
+            standard: true,
+            dataSourceId: "e957ac31-44a2-4718-8469-10470d3c41d9",
+            locale: "fr",
+            lastChangeDate: 1713792548335,
+            lastPublishDate: 1720687303859,
+            note: "",
+            published: true))
+        .environmentObject(StatbelService())
     }
 }

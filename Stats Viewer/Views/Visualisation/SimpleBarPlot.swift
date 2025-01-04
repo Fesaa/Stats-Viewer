@@ -1,52 +1,108 @@
 import SwiftUI
 import Charts
 
-class SimpleBarPlot: Visualisation {
-    @State private var key: String = ""
-    let source: ExportResult
+struct SimpleBarPlot: View {
+    var id: UUID = UUID()
+    var source: ExportResult
+    @State var config: Configuration
+    @State var errors: [String] = []
+    
+    func transform(_ data: Fact) -> BarMark {
+        let xKey = config.values["xKey"] ?? self.source.facts[0].keys.first!
+        let yKey = config.values["yKey"] ?? self.source.facts[0].keys.first!
 
-    init(source: ExportResult) {
-        self.source = source
+        let label = switch data[xKey]! {
+        case .string(let s): s
+        case .float(let f): String(f)
+        case .none: ""
+        }
+        
+        let value = switch data[yKey]! {
+        case .string(_): Float(0)
+        case .float(let f): f
+        case .none: Float(0)
+        }
+        
+        return BarMark(
+            x: .value("Type", label),
+            y: .value("Value", value)
+        )
     }
+    
+    func marks(_ index: Int) -> BarMark {
+        let fact = self.source.facts[index]
+        return self.transform(fact)
+    }
+    
+    var body: some View {
+        Text(config.title)
+            .font(.headline)
+        
+        Chart {
+            ForEach(self.source.facts.indices, id: \.self) { index in
+                self.marks(index)
+            }
+        }
+    }
+    
+}
 
+struct BarPlotConfigurationView: View {
+    var source: ExportResult
+    @Binding var cfg: Configuration
+    
     private func keys() -> [String] {
         if self.source.facts.isEmpty {
-            return []
-        }
+                return []
+            }
         return self.source.facts[0].keys.map { $0 }
-    }
-
-    private func mapData() -> Float? {
-        return 0
-    }
-
-    func optionModels() -> AnyView {
-        AnyView(NavigationView {
+        }
+    
+    var body: some View {
+        NavigationView {
             Form {
-                Section {
-                    Picker("Key", selection: $key) {
+                Section("Title") {
+                    TextField("Title", text: $cfg.title)
+                }
+                Section("X Key") {
+                    Picker("Key", selection: xKeyBinding()) {
                         ForEach(keys(), id: \.self) { key in
                             Text(key).tag(key)
                         }
-                    }.onChange(of: key, initial: true) { newValue, _ in
-                        self.key = newValue
+                    }
+                }
+                
+                Section("Y Key") {
+                    Picker("Key", selection: yKeyBinding()) {
+                        ForEach(keys(), id: \.self) { key in
+                            Text(key).tag(key)
+                        }
                     }
                 }
             }
-        })
+        }
+    }
+    
+    func xKeyBinding() -> Binding<String> {
+        Binding(
+            get: {
+                return self.cfg.values["xKey"] ?? self.keys().first ?? ""
+            },
+            set: {
+                self.cfg.values["xKey"] = $0
+            }
+        )
+    }
+    
+    func yKeyBinding() -> Binding<String> {
+        Binding(
+            get: {
+                return self.cfg.values["yKey"] ?? self.keys().first ?? ""
+            },
+            set: {
+                self.cfg.values["yKey"] = $0
+            }
+        )
     }
 
-    func visualisation() -> AnyView {
-        AnyView(Chart {
-            // Populate the chart as needed
-        })
-    }
-
-    func isValid() -> Bool {
-        return !key.isEmpty
-    }
-
-    func errors() -> [String] {
-        return key.isEmpty ? ["Key cannot be empty"] : []
-    }
 }

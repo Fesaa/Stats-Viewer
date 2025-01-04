@@ -20,10 +20,11 @@ public struct StatbelView: Codable, Identifiable {
     
 }
 
-
 public struct ExportResult: Codable {
-    public let facts: [Dictionary<String, FactValue>]
+    public let facts: [Fact]
 }
+
+public typealias Fact = Dictionary<String, FactValue>
 
 public enum FactValue: Codable {
     case string(String)
