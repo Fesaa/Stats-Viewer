@@ -7,6 +7,11 @@ struct StatbelViewView: View {
     let statbelView: StatbelView
     @State var source: ExportResult? = nil
     
+    private var types: [VisualisationType] = [
+        VisualisationType.BarPlot,
+        VisualisationType.Table,
+        VisualisationType.Map
+    ]
     @State private var selectedVisualizations: [VisualisationType] = []
     @State private var configs: [Configuration] = []
     
@@ -95,7 +100,7 @@ struct StatbelViewView: View {
     var optionsStack: some View {
         VStack {
             ScrollView {
-                ForEach(VisualisationType.allCases, id: \.self) { vis in
+                ForEach(types, id: \.self) { vis in
                     HStack {
                         Text(vis.DisplayName())
                         Spacer()

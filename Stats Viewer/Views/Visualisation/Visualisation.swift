@@ -5,12 +5,14 @@ enum VisualisationType: CaseIterable {
     
     case BarPlot
     case Table
+    case Map
     //case LinePlot
     
     func DisplayName() -> String {
         switch self {
         case .BarPlot: return "Bar Plot"
         case .Table: return "Table"
+        case .Map: return "Map"
         //case .LinePlot: return "Line Plot"
         }
     }
@@ -19,6 +21,7 @@ enum VisualisationType: CaseIterable {
         switch self {
         case .BarPlot: return AnyView(BarPlotConfigurationView(source: source, cfg: cfg, open: open))
         case .Table: return AnyView(TableConfigurationView(source: source, cfg: cfg, open: open))
+        case .Map: return AnyView(MapViewConfiguration(source: source, cfg: cfg, open: open))
         }
     }
     
@@ -26,6 +29,7 @@ enum VisualisationType: CaseIterable {
         switch self {
         case .BarPlot: return AnyView(SimpleBarPlot(source: source, config: cfg))
         case .Table: return AnyView(TableView(source: source, config: cfg))
+        case .Map: return AnyView(MapView(source: source, config: cfg))
         }
     }
 }
