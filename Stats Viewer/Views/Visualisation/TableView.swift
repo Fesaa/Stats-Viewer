@@ -1,43 +1,69 @@
 import SwiftUI
 
-import SwiftUI
-
 struct TableView: View {
     var id: UUID = UUID()
     var source: ExportResult
     @State var config: Configuration
 
     var body: some View {
-            NavigationView {
-                Table(visibleFacts()) {
-                    ForEach(visibleKeys(), id: \.self) { key in
-                     TableColumn(key) { fact in
-                         Text(fact.fact[key])
-                        } as (FactWrapper) -> _
+        NavigationView {
+            List {
+                ScrollView(.horizontal) {
+                    VStack(alignment: .leading) {
+                        TableHeaderView(keys: visibleKeys())
+
+                        ForEach(source.facts.indices, id: \.self) { index in
+                            TableRowView(keys: visibleKeys(), fact: source.facts[index])
+                        }
                     }
                 }
-                .navigationTitle("Table View")
+                .frame(maxWidth: .infinity)
             }
+            .navigationTitle("Table View")
         }
+    }
 
     private func visibleKeys() -> [String] {
         let ignore = config.getValues("ignore")
         guard let firstFact = source.facts.first else { return [] }
         return firstFact.keys.filter { !ignore.contains($0) }
     }
-    
-    private func visibleFacts() -> [FactWrapper] {
-        source.facts.map({ fact in
-            FactWrapper(id: UUID(), fact: fact)
-        })
+}
+
+struct TableHeaderView: View {
+    var keys: [String]
+
+    var body: some View {
+        HStack {
+            ForEach(keys, id: \.self) { key in
+                Text(key.capitalized)
+                    .font(.headline)
+                    .frame(width: 120, alignment: .leading)
+            }
+        }
+        .padding(.vertical, 5)
     }
 }
 
-struct FactWrapper: Identifiable {
-    var id: UUID
+struct TableRowView: View {
+    var keys: [String]
     var fact: Fact
-}
 
+    var body: some View {
+        HStack {
+            ForEach(keys, id: \.self) { key in
+                if let value = fact[key] {
+                    Text(value.description)
+                        .frame(width: 120, alignment: .leading)
+                } else {
+                    Text("-")
+                        .frame(width: 120, alignment: .leading)
+                }
+            }
+        }
+        .padding(.vertical, 2)
+    }
+}
 
 
 
@@ -65,7 +91,9 @@ struct TableConfigurationView: View {
         if self.source.facts.isEmpty {
             return []
         }
-        return self.source.facts[0].keys.map { $0 }
+        return self.source.facts[0].keys.map { $0 }.filter {
+            return !$0.isEmpty
+        }
     }
     
     var body: some View {
