@@ -102,44 +102,11 @@ struct TableConfigurationView: View {
                 Section("Title") {
                     TextField("Title", text: $cfg.title)
                 }
-                
-                /*Section(header: Text("Ignore List")) {
-                    List {
-                        ForEach(ignoreBindings().wrappedValue, id: \.self) { item in
-                            HStack {
-                                Text(item)
-                                Spacer()
-                                Button(action: {
-                                    removeFromIgnore(item)
-                                }) {
-                                    Image(systemName: "minus.circle")
-                                        .foregroundColor(.red)
-                                }
-                            }
-                        }
-                        .onDelete(perform: deleteFromIgnore)
-                    }
-                    HStack {
-                        TextField("Add item", text: Binding(
-                            get: { "" },
-                            set: { addToIgnore($0) }
-                        ))
-                        Button(action: {
-                            addToIgnore("")
-                        }) {
-                            Image(systemName: "plus.circle")
-                        }
-                    }
-                }*/
-                
-                Section(header: Text("Key Dropdown")) {
-                    Picker("Select a key", selection: keyBinding()) {
-                        ForEach(keys(), id: \.self) { key in
-                            Text(key).tag(key)
-                        }
-                    }
-                    .pickerStyle(MenuPickerStyle())
+
+                Section {
+                    Text("Table has no special options")
                 }
+
                 Button(action: { self.open.toggle() }) {
                     Text("Close")
                         .frame(maxWidth: .infinity)
