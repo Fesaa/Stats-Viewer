@@ -2,22 +2,85 @@ import SwiftUI
 import MapKit
 import CoreLocation
 
+class MapViewClass: NSObject, ObservableObject {
+    var id: UUID = UUID()
+    var source: ExportResult
+    @State var config: Configuration
+    @Published private(set) var annotations: [IdentifiableAnnotation] = []
+    @Published private(set) var currentLocation: CLLocationCoordinate2D?
+    private let locationManager = CLLocationManager()
+    
+    init(source: ExportResult, config: Configuration) {
+        self.source = source
+        self.config = config
+        super.init()
+        setupLocationManager()
+    }
+    
+    func setupLocationManager() {
+        locationManager.delegate = self // Conform to CLLocationManagerDelegate
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
+}
+
+// MARK: - CLLocationManagerDelegate
+extension MapViewClass: CLLocationManagerDelegate {
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first?.coordinate {
+            currentLocation = location
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location update failed: \(error.localizedDescription)")
+    }
+}
+
+
+class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let locationManager = CLLocationManager()
+    @Published var currentLocation: CLLocationCoordinate2D?
+    
+    override init() {
+        super.init()
+        locationManager.delegate = self
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.startUpdatingLocation()
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        if let location = locations.first?.coordinate {
+            currentLocation = location
+        }
+    }
+    
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        print("Location update failed: \(error.localizedDescription)")
+    }
+}
+
 struct MapView: View {
     var id: UUID = UUID()
     var source: ExportResult
     @State var config: Configuration
+    @StateObject private var locationManager = LocationManager()
+    @State private var region: MKCoordinateRegion = MKCoordinateRegion(
+            center: CLLocationCoordinate2D(latitude: 50.8503, longitude: 4.3517),
+            latitudinalMeters: 90000,
+            longitudinalMeters: 90000
+        )
     
     @State private var annotations: [IdentifiableAnnotation] = []
-    @State private var region: MKCoordinateRegion = MKCoordinateRegion(
-        center: CLLocationCoordinate2D(latitude: 50.8503, longitude: 4.3517), // Centered on Brussels
-        latitudinalMeters: 90000, // Covers most of Belgium
-        longitudinalMeters: 90000
-    )
     
     var body: some View {
         Map(bounds: MapCameraBounds(centerCoordinateBounds: region, minimumDistance: 100000)) {
             ForEach(annotations) { annotation in
                 Marker(annotation.title, coordinate: annotation.coordinate)
+            }
+
+            if let currentLocation = locationManager.currentLocation {
+                Marker("Current Location", coordinate: currentLocation)
             }
         }
         .onAppear {
@@ -60,6 +123,7 @@ struct MapView: View {
         }
     }
 }
+
 
 // MARK: - Identifiable Annotation
 struct IdentifiableAnnotation: Identifiable {
