@@ -48,6 +48,7 @@ struct BarPlotConfigurationView: View {
     var source: ExportResult
     @Binding var cfg: Configuration
     @Binding var open: Bool
+    @State private var showAlert = false
     
     private func keys() -> [String] {
         if self.source.facts.isEmpty {
@@ -77,10 +78,25 @@ struct BarPlotConfigurationView: View {
                         }
                     }
                 }
-                Button(action: { self.open.toggle() }) {
+                Button(action: {
+                    let xKey = xKeyBinding().wrappedValue
+                    let yKey = yKeyBinding().wrappedValue
+                    
+                    if xKey == yKey {
+                        showAlert = true
+                    } else {
+                        self.open.toggle()
+                    }
+                }) {
                     Text("Close")
                         .frame(maxWidth: .infinity)
                         .cornerRadius(10)
+                }.alert(isPresented: $showAlert) {
+                    Alert(
+                        title: Text("Invalid Keys"),
+                        message: Text("X-Key and Y-Key must be different."),
+                        dismissButton: .default(Text("OK"))
+                    )
                 }
             }
         }
