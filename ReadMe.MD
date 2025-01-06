@@ -3,7 +3,7 @@ You may start it with
 ```bash
 go run .
 ```
-I'd try opening http://localhost:8080/views/1be9b77f-4005-4d58-a885-8281b5bbe617/result/JSON in your browser or postman,
+I'd try opening http://localhost:8080/views in your browser or postman,
 and restarting the proxy until it returns the json. Instead of the of the error. 
 
 If you wish to deploy the iOS application to your phone, you'll have to change the address it tries getting the data from.
