@@ -26,6 +26,13 @@ struct ContentView: View {
                         applyFilters()
                     }
                 
+                if !NetworkService.shared.isConnected {
+                    Text("Not connected to the internet, trying to use cached data.")
+                        .foregroundColor(.red)
+                        .font(.subheadline)
+                        .padding(.leading)
+                }
+                
                 if (filteredViews.count == 0) {
                     VStack(spacing: 20) {
                         Image(systemName: "magnifyingglass")

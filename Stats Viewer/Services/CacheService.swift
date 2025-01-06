@@ -73,9 +73,12 @@ public class CacheService: ObservableObject {
             let data = try Data(contentsOf: fileURL)
             let cacheEntry = try JSONDecoder().decode(CacheEntry<T>.self, from: data)
             
-            if cacheEntry.storageDate < Date().addingTimeInterval(-60 * 60 * 24) {
-                try delete(key: key)
-                return nil
+            // Only clear cache if we are certain newer data can be retrieved. Assuming the API does not die.
+            if NetworkService.shared.isConnected {
+                if cacheEntry.storageDate < Date().addingTimeInterval(-60 * 60 * 24) {
+                    try delete(key: key)
+                    return nil
+                }
             }
             
             return cacheEntry.object
