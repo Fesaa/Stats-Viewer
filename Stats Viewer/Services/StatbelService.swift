@@ -1,4 +1,5 @@
 import Foundation
+import Logging
 
 public class StatbelService: ObservableObject {
     //private let apiUrl: String = "https://bestat.economie.fgov.be/bestat/api/"
@@ -8,6 +9,7 @@ public class StatbelService: ObservableObject {
     private let urlSession = URLSession.shared
     
     private let cache: CacheService = CacheService.shared
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.services.statbel")
     
     public func getExportResult(viewID: String, force: Bool = false) async throws -> ExportResult {
         if !force {
@@ -25,7 +27,7 @@ public class StatbelService: ObservableObject {
         do {
             try self.cache.store(object: export, key: "views-export-\(viewID)")
         } catch {
-            print("\(error)")
+            logger.error("Failed to store export result, \(viewID): \(error)")
         }
         return export
     }
@@ -34,7 +36,6 @@ public class StatbelService: ObservableObject {
         if !force {
             let cachedViews = self.cache.retrieve(object: [StatbelView].self, key: "views")
             if (cachedViews != nil) {
-                print("Returning \(cachedViews!.count) views from cache")
                 return cachedViews!
             }
         }
@@ -47,7 +48,7 @@ public class StatbelService: ObservableObject {
         do {
             try self.cache.store(object: views, key: "views")
         } catch {
-            print("\(error)")
+            logger.error("Failed to store views: \(error)")
         }
         
         return views

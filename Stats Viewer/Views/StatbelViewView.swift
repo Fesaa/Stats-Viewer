@@ -1,4 +1,5 @@
 import SwiftUI
+import Logging
 
 struct StatbelViewView: View {
     
@@ -17,6 +18,8 @@ struct StatbelViewView: View {
     
     @State private var showConfig: Bool = false
     @State private var configIndex: Int = 0
+    
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.statsbel")
     
     
     init(statbelView: StatbelView) {
@@ -165,7 +168,7 @@ struct StatbelViewView: View {
                 do {
                     self.source = try await self.statsbelService.getExportResult(viewID: self.statbelView.id)
                 } catch {
-                    print("\(error)")
+                    logger.error("Failed to get export result: \(error)")
                 }
             }
         }

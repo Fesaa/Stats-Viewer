@@ -1,4 +1,5 @@
 import SwiftUI
+import Logging
 
 struct SettingsView: View {
     @EnvironmentObject var statbelService: StatbelService
@@ -10,6 +11,8 @@ struct SettingsView: View {
     @State private var cachedItems: [(key: String, date: Date)] = []
     @State private var showNotification: Bool = false
     @State private var notificationMessage: String = ""
+    
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.settingsview")
 
     var body: some View {
         NavigationView {
@@ -77,7 +80,7 @@ struct SettingsView: View {
         do {
             return try cache.age(key)
         } catch {
-            print("Failed to load cache date \(error)")
+            logger.error("Failed to get cache date for \(key): \(error)")
             return nil
         }
     }
@@ -93,9 +96,10 @@ struct SettingsView: View {
         do {
             self.cachedItems = try cache.listAllKeysAndDates()
                 .filter { $0.key != "views" }
-            print("Loaded \(self.cachedItems.count) cached items")
+            
+            logger.debug("Loaded \(self.cachedItems.count) cached items")
         } catch {
-            print("Failed to load item? \(error)")
+            logger.error("Failed to load cached items \(error)")
             self.cachedItems = []
         }
     }

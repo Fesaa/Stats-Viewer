@@ -1,4 +1,5 @@
 import SwiftUI
+import Logging
 
 struct ContentView: View {
     @EnvironmentObject var statsbelService: StatbelService
@@ -14,6 +15,8 @@ struct ContentView: View {
     }()
     @State private var showSettingsSheet: Bool = false
     @State private var showFilterSheet: Bool = false
+    
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.contentview")
     
     
     var body: some View {
@@ -112,7 +115,7 @@ struct ContentView: View {
     }
     
     private func loadViews() async {
-        print("Loading datasources...")
+        logger.info("Loading views...")
         
         do {
             let data = try await statsbelService.getAllView()
@@ -120,7 +123,7 @@ struct ContentView: View {
                 views = data
             }
         } catch {
-            print("Failed to load datasources: \(error)")
+            logger.error("Failed to load views: \(error)")
         }
     }
 }

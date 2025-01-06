@@ -1,6 +1,7 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import Logging
 
 class MapViewClass: NSObject, ObservableObject {
     var id: UUID = UUID()
@@ -9,6 +10,8 @@ class MapViewClass: NSObject, ObservableObject {
     @Published private(set) var annotations: [IdentifiableAnnotation] = []
     @Published private(set) var currentLocation: CLLocationCoordinate2D?
     private let locationManager = CLLocationManager()
+    
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.visualisations.map")
     
     init(source: ExportResult, config: Configuration) {
         self.source = source
@@ -33,7 +36,7 @@ extension MapViewClass: CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location update failed: \(error.localizedDescription)")
+        logger.error("Location update failed: \(error.localizedDescription)")
     }
 }
 
@@ -41,6 +44,8 @@ extension MapViewClass: CLLocationManagerDelegate {
 class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let locationManager = CLLocationManager()
     @Published var currentLocation: CLLocationCoordinate2D?
+    
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.visualisations.map")
     
     override init() {
         super.init()
@@ -56,7 +61,7 @@ class LocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("Location update failed: \(error.localizedDescription)")
+        logger.error("Location update failed: \(error.localizedDescription)")
     }
 }
 
@@ -72,6 +77,8 @@ struct MapView: View {
         )
     
     @State private var annotations: [IdentifiableAnnotation] = []
+    
+    let logger = Logger(label: "art.ameliah.ehb.ios.statsviewer.visualisations.map")
     
     var body: some View {
         Map(bounds: MapCameraBounds(centerCoordinateBounds: region, minimumDistance: 100000)) {
@@ -90,7 +97,7 @@ struct MapView: View {
     
     private func setupAnnotations() {
         guard let locKey = config.getValue("loc"), let valKey = config.getValue("val") else {
-            print("Configuration keys missing")
+            logger.error("Configuration keys missing")
             return
         }
         
@@ -102,7 +109,7 @@ struct MapView: View {
                 
                 geocoder.geocodeAddressString(locationName) { placemarks, error in
                     if let error = error {
-                        print("Geocoding failed for \(locationName): \(error)")
+                        logger.error("Geocoding failed for \(locationName): \(error)")
                         return
                     }
                     
