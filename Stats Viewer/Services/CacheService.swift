@@ -1,16 +1,14 @@
 import Foundation
 
-public protocol CacheService: ObservableObject {
-    func store<T: Codable>(object: T, key: String) throws
-    func retrieve<T: Codable>(object: T.Type, key: String) -> T?
-    func delete(key: String) throws
-}
-
-public class CacheServiceImpl: CacheService {
-    static let shared = CacheServiceImpl()
+public class CacheService: ObservableObject {
+    static let shared = CacheService()
     
     private struct CacheEntry<T: Codable>: Codable {
         let object: T
+        let storageDate: Date
+    }
+    
+    private struct SimplifiedCacheEntry: Decodable {
         let storageDate: Date
     }
     
@@ -22,6 +20,37 @@ public class CacheServiceImpl: CacheService {
             fatalError("Unable to locate cache directory.")
         }
         cacheDirectory = directory
+    }
+    
+    public func age(_ key: String) throws -> Date? {
+        let fileURL = cacheDirectory.appendingPathComponent(key)
+        
+        do {
+            let data = try Data(contentsOf: fileURL)
+            let cacheEntry = try JSONDecoder().decode(SimplifiedCacheEntry.self, from: data)
+            return cacheEntry.storageDate
+        } catch let error as NSError where error.domain == NSCocoaErrorDomain && error.code == NSFileReadNoSuchFileError {
+            return nil
+        } catch {
+            throw error
+        }
+    }
+
+    
+    public func listAllKeysAndDates() throws -> [(key: String, date: Date)] {
+        let fileManager = FileManager.default
+        let fileURLs = try fileManager.contentsOfDirectory(at: cacheDirectory, includingPropertiesForKeys: nil)
+        
+        var result: [(key: String, date: Date)] = []
+        
+        for fileURL in fileURLs {
+            let key = fileURL.lastPathComponent
+            if let date = try? age(key) {
+                result.append((key: key, date: date))
+            }
+        }
+        
+        return result
     }
     
     public func store<T: Codable>(object: T, key: String) throws {
@@ -43,6 +72,12 @@ public class CacheServiceImpl: CacheService {
         do {
             let data = try Data(contentsOf: fileURL)
             let cacheEntry = try JSONDecoder().decode(CacheEntry<T>.self, from: data)
+            
+            if cacheEntry.storageDate < Date().addingTimeInterval(-60 * 60 * 24) {
+                try delete(key: key)
+                return nil
+            }
+            
             return cacheEntry.object
         } catch {
             return nil

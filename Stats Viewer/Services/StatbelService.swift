@@ -7,7 +7,7 @@ public class StatbelService: ObservableObject {
     private let jsonDecoder: JSONDecoder = JSONDecoder()
     private let urlSession = URLSession.shared
     
-    private let cache: any CacheService = CacheServiceImpl.shared
+    private let cache: CacheService = CacheService.shared
     
     public func getExportResult(viewID: String, force: Bool = false) async throws -> ExportResult {
         if !force {
@@ -21,13 +21,20 @@ public class StatbelService: ObservableObject {
             throw URLError(.badURL)
         }
         
-        return try await self.get(ExportResult.self, url: url)
+        let export = try await self.get(ExportResult.self, url: url)
+        do {
+            try self.cache.store(object: export, key: "views-export-\(viewID)")
+        } catch {
+            print("\(error)")
+        }
+        return export
     }
     
     public func getAllView(_ force: Bool = false) async throws -> [StatbelView] {
         if !force {
             let cachedViews = self.cache.retrieve(object: [StatbelView].self, key: "views")
             if (cachedViews != nil) {
+                print("Returning \(cachedViews!.count) views from cache")
                 return cachedViews!
             }
         }
